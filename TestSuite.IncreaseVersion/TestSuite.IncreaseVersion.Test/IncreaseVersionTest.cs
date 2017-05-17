@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 
 namespace TestSuite.IncreaseVersion.Test
@@ -17,6 +16,7 @@ namespace TestSuite.IncreaseVersion.Test
             var file2 = Mock.Of<IFile>();
             increaseVersion.Files.Add(file1);
             increaseVersion.Files.Add(file2);
+            increaseVersion.Rules.Add(Mock.Of<IRule>());
             increaseVersion.Rules.Add(Mock.Of<IRule>());
 
             // Act

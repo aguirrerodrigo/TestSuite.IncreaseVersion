@@ -8,39 +8,13 @@ namespace TestSuite.IncreaseVersion.Console
 {
     class Program
     {
-        private static string directory;
-        private static string version;
-
         static void Main(string[] args)
         {
-            if (args.Length < 1)
-            {
-                console.Write("Input parent directory: ");
-                directory = console.ReadLine();
-            }
-            else
-                directory = args[0];
+            var directory = GetDirectory(args);
+            var version = GetVersion(args);
+            var increaseVersion = CreateIncreaseVersion(version);
 
-            if (args.Length < 2)
-            {
-                console.Write("Input version: ");
-                version = console.ReadLine();
-            }
-            else
-                directory = args[1];
-
-            if (!Directory.Exists(directory))
-                throw new DirectoryNotFoundException($"Could not find directory: {directory}.");
-
-            var files = GetFilesRecursive(directory);
-
-            var increaseVersion = new IncreaseVersion();
-            increaseVersion.Rules.Add(new RemoveAssemblyFileVersionRule());
-            increaseVersion.Rules.Add(new RemoveCommentedAssemblyFileVersionRule());
-            increaseVersion.Rules.Add(new RemoveCommentedAssemblyVersionRule());
-            var updateAssemblyVersionRule = new UpdateAssemblyVersionRule();
-            updateAssemblyVersionRule.NewVersion = version;
-            increaseVersion.Rules.Add(updateAssemblyVersionRule);
+            var files = GetFilesRecursive(directory);            
             foreach(var file in files)
             {
                 var filename = Path.GetFileName(file);
@@ -55,7 +29,52 @@ namespace TestSuite.IncreaseVersion.Console
             console.WriteLine($"Update Version(\"{version}\") Complete!");
         }
 
-        static IEnumerable<string> GetFilesRecursive(string path)
+        private static string GetDirectory(string[] args)
+        {
+            var result = default(string);
+            if (args.Length < 1)
+            {
+                console.Write("Input parent directory: ");
+                result = console.ReadLine();
+            }
+            else
+                result = args[0];
+
+            if (!Directory.Exists(result))
+                throw new DirectoryNotFoundException($"Could not find directory: {result}.");
+
+            return result;
+        }
+
+        private static string GetVersion(string[] args)
+        {
+            var result = default(string);
+            if (args.Length < 2)
+            {
+                console.Write("Input version: ");
+                result = console.ReadLine();
+            }
+            else
+                result = args[1];
+
+            return result;
+        }
+
+        private static IncreaseVersion CreateIncreaseVersion(string version)
+        {
+            var result = new IncreaseVersion();
+            result.Rules.Add(new RemoveAssemblyFileVersionRule());
+            result.Rules.Add(new RemoveCommentedAssemblyFileVersionRule());
+            result.Rules.Add(new RemoveCommentedAssemblyVersionRule());
+
+            var updateAssemblyVersionRule = new UpdateAssemblyVersionRule();
+            updateAssemblyVersionRule.NewVersion = version;
+            result.Rules.Add(updateAssemblyVersionRule);
+
+            return result;
+        }
+        
+        private static IEnumerable<string> GetFilesRecursive(string path)
         {
             var files = new List<string>(Directory.GetFiles(path));
             foreach(var dir in Directory.GetDirectories(path))
