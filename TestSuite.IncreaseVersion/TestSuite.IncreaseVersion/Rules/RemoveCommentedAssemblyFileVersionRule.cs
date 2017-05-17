@@ -5,7 +5,7 @@ using System.Text.RegularExpressions;
 namespace TestSuite.IncreaseVersion.Rules
 {
     /// <summary>
-    /// Removes: // [assembly: AssemblyVersion("1.0.*")]
+    /// Removes: // [assembly: AssemblyFileVersion("1.0.*")]
     /// </summary>
     public class RemoveCommentedAssemblyFileVersionRule : IRule
     {
