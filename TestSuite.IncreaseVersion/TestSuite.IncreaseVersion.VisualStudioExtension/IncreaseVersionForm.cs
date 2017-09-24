@@ -1,11 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Windows.Forms;
 using EnvDTE;
 using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Shell.Interop;
 using TestSuite.IncreaseVersion.Rules;
+using IoFile = System.IO.File;
 
 namespace TestSuite.IncreaseVersion.VisualStudioExtension
 {
@@ -88,13 +90,9 @@ namespace TestSuite.IncreaseVersion.VisualStudioExtension
             {
                 outputWindow?.OutputString($"Updating project versions to {txtVersion.Text}.\r\n");
 
-                var fileNames = SearchProjectItem(dte.Solution, "AssemblyInfo.cs");
+                var fileNames = GetAssemblyInfoFiles(dte.Solution);
                 if (!fileNames.Any())
-                {
-                    outputWindow?.OutputString("No AssemblyInfo.cs found in any project. " +
-                        "Lightweight solution load might be enabled. " +
-                        "Please disable lightweight solution load and try again.\r\n");
-                }
+                    outputWindow?.OutputString("No Properties\\AssemblyInfo.cs found in any project. \r\n");
                 else
                 {
                     var increaseVersion = CreateIncreaseVersion(txtVersion.Text);
@@ -106,51 +104,36 @@ namespace TestSuite.IncreaseVersion.VisualStudioExtension
 
                     increaseVersion.Execute();
 
-                    outputWindow.OutputString("Project versions updated.\r\n");
+                    outputWindow?.OutputString("Project versions updated.\r\n");
                 }
             }
 
             this.Close();
         }
 
-        private List<string> searchedFiles = new List<string>();
-        private IEnumerable<string> SearchProjectItem(Solution sln, string search)
+        private IEnumerable<string> GetAssemblyInfoFiles(Solution sln)
         {
-            searchedFiles.Clear();
+            var result = new List<string>();
+
+            var slnPath = Path.GetDirectoryName(sln.FileName);
             for (short i = 1; i < sln.Projects.Count + 1; i++)
             {
-                var proj = sln.Projects.Item(i);
-                if(proj.ProjectItems != null)
+                try
                 {
-                    for(short j = 1; j < proj.ProjectItems.Count + 1; j++)
-                    {
-                        var projItem = proj.ProjectItems.Item(j);
-                        RecursiveSearch(projItem, search);
-                    }
-                }
+                    var proj = sln.Projects.Item(i);
+                    var projPath = Path.GetDirectoryName(proj.UniqueName);
+                    if (!Path.IsPathRooted(projPath))
+                        projPath = Path.Combine(slnPath, projPath);
+
+                    var assemblyInfoPath = Path.GetFullPath(Path.Combine(projPath, @"Properties\AssemblyInfo.cs"));
+                    if (IoFile.Exists(assemblyInfoPath))
+                        result.Add(assemblyInfoPath);
+                } catch { }
             }
 
-            return searchedFiles;
+            return result;
         }
-
-        private void RecursiveSearch(ProjectItem item, string search)
-        {
-            for (short i = 1; i < item.FileCount + 1; i++)
-            {
-                var fileName = item.FileNames[i];
-                if (fileName.EndsWith("\\" + search))
-                    searchedFiles.Add(fileName);
-            }
-
-            if (item.ProjectItems != null)
-            {
-                for (short i = 1; i < item.ProjectItems.Count + 1; i++)
-                {
-                    RecursiveSearch(item.ProjectItems.Item(i), search);
-                }
-            }
-        }
-
+        
         private IncreaseVersion CreateIncreaseVersion(string version)
         {
             var result = new IncreaseVersion();
