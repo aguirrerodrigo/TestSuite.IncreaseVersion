@@ -3,7 +3,7 @@
   <Metadata>
     <Identity Id="TestSuite.IncreaseVersion.VisualStudioExtension.raguirre.c5489ff6-4bcb-4023-bef9-3f382af6eb2e" Version="1.0" Language="en-US" Publisher="raguirre" />
     <DisplayName>TestSuite.IncreaseVersion.VisualStudioExtension</DisplayName>
-    <Description>Right-click context menu on solution.</Description>
+    <Description>Right-click solution context menu.</Description>
   </Metadata>
   <Installation>
     <InstallationTarget Id="Microsoft.VisualStudio.Community" Version="[15.0]" />
