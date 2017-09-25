@@ -106,7 +106,7 @@ namespace TestSuite.IncreaseVersion.VisualStudioExtension
 
                     increaseVersion.Execute();
 
-                    outputWindow.OutputString("Project versions updated.\r\n");
+                    outputWindow?.OutputString("Project versions updated.\r\n");
                 }
             }
 
